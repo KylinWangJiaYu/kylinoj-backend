@@ -1,9 +1,18 @@
 package com.kylin.kylinoj.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.kylin.kylinoj.model.dto.question.QuestionQueryRequest;
 import com.kylin.kylinoj.model.dto.questionsubmit.QuestionSubmitAddRequest;
+import com.kylin.kylinoj.model.dto.questionsubmit.QuestionSubmitQueryRequest;
+import com.kylin.kylinoj.model.entity.Question;
 import com.kylin.kylinoj.model.entity.QuestionSubmit;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.kylin.kylinoj.model.entity.User;
+import com.kylin.kylinoj.model.vo.QuestionSubmitVO;
+import com.kylin.kylinoj.model.vo.QuestionVO;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
 * @author 97903
@@ -20,4 +29,29 @@ public interface QuestionSubmitService extends IService<QuestionSubmit> {
      */
     long doQuestionSubmit(QuestionSubmitAddRequest questionSubmitAddRequest, User loginUser);
 
+    /**
+     * 获取查询条件
+     *
+     * @param questionSubmitQueryRequest
+     * @return
+     */
+    QueryWrapper<QuestionSubmit> getQueryWrapper(QuestionSubmitQueryRequest questionSubmitQueryRequest);
+
+    /**
+     * 获取题目封装
+     *
+     * @param questionSubmit
+     * @param loginUser
+     * @return
+     */
+    QuestionSubmitVO getQuestionSubmitVO(QuestionSubmit questionSubmit, User loginUser);
+
+    /**
+     * 分页获取题目封装
+     *
+     * @param questionSubmitPage
+     * @param loginUser
+     * @return
+     */
+    Page<QuestionSubmitVO> getQuestionSubmitVOPage(Page<QuestionSubmit> questionSubmitPage, User loginUser);
 }

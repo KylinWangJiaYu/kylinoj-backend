@@ -1,11 +1,19 @@
 package com.kylin.kylinoj.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.kylin.kylinoj.annotation.AuthCheck;
 import com.kylin.kylinoj.common.BaseResponse;
 import com.kylin.kylinoj.common.ErrorCode;
 import com.kylin.kylinoj.common.ResultUtils;
+import com.kylin.kylinoj.constant.UserConstant;
 import com.kylin.kylinoj.exception.BusinessException;
+import com.kylin.kylinoj.model.dto.question.QuestionQueryRequest;
 import com.kylin.kylinoj.model.dto.questionsubmit.QuestionSubmitAddRequest;
+import com.kylin.kylinoj.model.dto.questionsubmit.QuestionSubmitQueryRequest;
+import com.kylin.kylinoj.model.entity.Question;
+import com.kylin.kylinoj.model.entity.QuestionSubmit;
 import com.kylin.kylinoj.model.entity.User;
+import com.kylin.kylinoj.model.vo.QuestionSubmitVO;
 import com.kylin.kylinoj.service.QuestionSubmitService;
 import com.kylin.kylinoj.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -19,9 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * 题目提交接口
- *
- *
- * 
  */
 @RestController
 @RequestMapping("/question_submit")
@@ -42,15 +47,34 @@ public class QuestionSubmitController {
      * @return resultNum 本次点赞变化数
      */
     @PostMapping("/")
-    public BaseResponse<Long> doQuestionSubmit(@RequestBody QuestionSubmitAddRequest questionSubmitAddRequest,
-            HttpServletRequest request) {
+    public BaseResponse<Long> doQuestionSubmit(@RequestBody QuestionSubmitAddRequest questionSubmitAddRequest, HttpServletRequest request) {
         if (questionSubmitAddRequest == null || questionSubmitAddRequest.getQuestionId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         // 登录才能点赞
         final User loginUser = userService.getLoginUser(request);
-        long questionSubmitId= questionSubmitService.doQuestionSubmit(questionSubmitAddRequest, loginUser);
+        long questionSubmitId = questionSubmitService.doQuestionSubmit(questionSubmitAddRequest, loginUser);
         return ResultUtils.success(questionSubmitId);
+    }
+
+    /**
+     * 分页获取题目提交列表（除了管理员外，普通用户只能看到非答案、提交代码等公开信息）
+     *
+     * @param questionSubmitQueryRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/list/page")
+    public BaseResponse<Page<QuestionSubmitVO>> listQuestionSubmitByPage(@RequestBody QuestionSubmitQueryRequest questionSubmitQueryRequest,
+                                                                         HttpServletRequest request) {
+        long current = questionSubmitQueryRequest.getCurrent();
+        long size = questionSubmitQueryRequest.getPageSize();
+        //从数据库中查询原始的题目提交分页信息
+        Page<QuestionSubmit> questionSubmitPage = questionSubmitService.page(new Page<>(current, size),
+                questionSubmitService.getQueryWrapper(questionSubmitQueryRequest));
+        final User loginUser = userService.getLoginUser(request);
+        //返回脱敏信息
+        return ResultUtils.success(questionSubmitService.getQuestionSubmitVOPage(questionSubmitPage, loginUser));
     }
 
 }

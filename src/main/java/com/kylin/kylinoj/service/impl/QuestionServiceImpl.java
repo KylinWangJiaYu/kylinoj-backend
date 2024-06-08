@@ -11,6 +11,7 @@ import com.kylin.kylinoj.exception.ThrowUtils;
 import com.kylin.kylinoj.model.dto.question.QuestionQueryRequest;
 import com.kylin.kylinoj.model.entity.*;
 import com.kylin.kylinoj.model.vo.QuestionVO;
+import com.kylin.kylinoj.model.vo.QuestionVO;
 import com.kylin.kylinoj.model.vo.UserVO;
 import com.kylin.kylinoj.service.QuestionService;
 import com.kylin.kylinoj.mapper.QuestionMapper;
@@ -42,6 +43,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
 
     /**
      * 校验题目是否合法
+     *
      * @param question
      * @param add
      */
@@ -84,12 +86,19 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
      * @param questionQueryRequest
      * @return
      */
+    /**
+     * 获取查询包装类(用户根据哪些字段查询，根据前端传来的请求对象，得到 mubatis 框架支持的查询QueryWrapper类)
+     *
+     * @param questionQueryRequest
+     * @return
+     */
     @Override
     public QueryWrapper<Question> getQueryWrapper(QuestionQueryRequest questionQueryRequest) {
         QueryWrapper<Question> queryWrapper = new QueryWrapper<>();
         if (questionQueryRequest == null) {
             return queryWrapper;
         }
+
         Long id = questionQueryRequest.getId();
         String title = questionQueryRequest.getTitle();
         String content = questionQueryRequest.getContent();
@@ -102,7 +111,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
         // 拼接查询条件
         queryWrapper.like(StringUtils.isNotBlank(title), "title", title);
         queryWrapper.like(StringUtils.isNotBlank(content), "content", content);
-        queryWrapper.like(StringUtils.isNotBlank(answer), "answer", content);
+        queryWrapper.like(StringUtils.isNotBlank(answer), "answer", answer);
         if (CollectionUtils.isNotEmpty(tags)) {
             for (String tag : tags) {
                 queryWrapper.like("tags", "\"" + tag + "\"");
@@ -115,6 +124,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
                 sortField);
         return queryWrapper;
     }
+
     @Override
     public QuestionVO getQuestionVO(Question question, HttpServletRequest request) {
         QuestionVO questionVO = QuestionVO.objToVo(question);
